@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js 手势控制粒子系统</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000000; }
+        canvas { display: block; }
+        /* 隐藏实际的视频流，只用于 MediaPipe 处理 */
+        #videoElement { position: absolute; top: 0; left: 0; opacity: 0; visibility: hidden; }
+        /* UI 样式优化 */
+        .dg.main { font-size: 14px; }
+        .dg .c { padding: 4px 0; }
+    </style>
+
+    <script src="three.min.js"></script>
+    <script src="hands.min.js" crossorigin="anonymous"></script>
+    <script src="camera_utils.min.js" crossorigin="anonymous"></script>
+    <script src="dat.gui.min.js"></script>
+</head>
+<body>
+<video id="videoElement"></video>
+
+<script src="index.js"></script>
+</body>
+</html>
