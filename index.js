@@ -10,8 +10,8 @@ const clock = new THREE.Clock();
 
 // --- UI 控制对象 ---
 const settings = {
-    particleColor: '#00FFFF', // 默认青色
-    particleSize: 0.03,
+    particleColor: '#d000ff', // 默认青色
+    particleSize: 0.01,
     shapeScale: 2.0,
     particleShape: '爱心',
     // 全屏控制
@@ -154,14 +154,15 @@ function initThree() {
     updateParticleColors(settings.particleColor);
 
     const material = new THREE.PointsMaterial({
-        // size: settings.particleSize, // <-- 确保这里使用 settings.particleSize
-        size: 0.03, // 您 UI 默认值是 0.03，这个值一般是合理的。但如果看不到，可以暂时调小，例如 0.01
-
-        sizeAttenuation: true, // <-- 确保这一项是 true，让粒子大小随距离衰减
+        size: settings.particleSize,
+        sizeAttenuation: true,
         vertexColors: true,
-        blending: THREE.AdditiveBlending, // <-- 确保是 AdditiveBlending，让粒子发光叠加
-        transparent: true, // <-- 确保是 true
-        depthWrite: false // <-- 【新增】对于透明叠加粒子，通常设置为 false，避免深度写入问题
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        depthWrite: false, // <--- 关键修改：禁用深度写入！
+        // 增加一个贴图可以使粒子看起来是圆形的，而不是默认的方形。
+        // 如果没有自定义贴图，可以暂时省略
+        // map: new THREE.TextureLoader().load('textures/spark.png')
     });
 
     // 6. 创建 particles 对象 (现在 particles 对象已存在)
@@ -193,14 +194,19 @@ function updateParticleColors(hexColor) {
     for (let i = 0; i < particleCount; i++) {
         const i3 = i * 3;
 
-        // 颜色随机扰动，增加视觉丰富度
-        const r = baseColor.r + (Math.random() - 0.5) * 0.1;
-        const g = baseColor.g + (Math.random() - 0.5) * 0.1;
-        const b = baseColor.b + (Math.random() - 0.5) * 0.1;
+        // 生成一个随机亮度乘数，使部分粒子更亮
+        // Math.random() * 0.4 + 0.6 将生成 0.6 到 1.0 之间的值
+        const brightness = Math.random() * 0.4 + 0.6;
 
-        colors[i3] = Math.max(0, Math.min(1, r));
-        colors[i3 + 1] = Math.max(0, Math.min(1, g));
-        colors[i3 + 2] = Math.max(0, Math.min(1, b));
+        // 颜色随机扰动和亮度叠加
+        const r = baseColor.r * brightness + Math.random() * 0.05;
+        const g = baseColor.g * brightness + Math.random() * 0.05;
+        const b = baseColor.b * brightness + Math.random() * 0.05;
+
+        // 使用 THREE.AdditiveBlending 时，颜色值可以超过 1.0 以获得更强的发光效果
+        colors[i3] = r * 1.5; // 乘以 1.5 增加强度！
+        colors[i3 + 1] = g * 1.5;
+        colors[i3 + 2] = b * 1.5;
     }
 
     // **关键：只有当 particles 对象存在时，才设置 needsUpdate**
