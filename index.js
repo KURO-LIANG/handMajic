@@ -37,19 +37,22 @@ function generateHeartShape(positions) {
     for (let i = 0; i < particleCount; i++) {
         const i3 = i * 3;
 
-        // 使用随机参数 t 和 phi
         const t = Math.random() * 2 * Math.PI;
-        const phi = Math.random() * 2 * Math.PI;
 
-        // 爱心曲线 (2D)
         let x = 16 * Math.pow(Math.sin(t), 3);
         let y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
-        let z = Math.cos(phi) * 1; // 增加少量Z轴扰动，使其变成3D
 
-        // 归一化和缩放
-        positions[i3] = (x / 20) * scale + (Math.random() - 0.5) * 0.1;
-        positions[i3 + 1] = (y / 20) * scale + (Math.random() - 0.5) * 0.1;
-        positions[i3 + 2] = (z / 20) * scale + (Math.random() - 0.5) * 0.1;
+        // 【关键修改 1】：增加 Z 轴的随机范围和强度
+        // 当前可能只是 Math.cos(phi) * 1，这个 Z 轴范围不够大
+        // 我们可以用一个围绕中心点扩散的随机 Z 值
+        const z = (Math.random() - 0.5) * 2; // 调整这里的乘数 2，可以增加厚度
+
+        // 【关键修改 2】：在 x 和 y 方向上增加少量扰动，使粒子不那么规则地排列
+        const noiseFactor = 0.2; // 调整扰动强度
+
+        positions[i3] = (x / 20) * scale + (Math.random() - 0.5) * noiseFactor;
+        positions[i3 + 1] = (y / 20) * scale + (Math.random() - 0.5) * noiseFactor;
+        positions[i3 + 2] = z * scale * 0.2 + (Math.random() - 0.5) * noiseFactor; // Z 轴也加上扰动
     }
 }
 
