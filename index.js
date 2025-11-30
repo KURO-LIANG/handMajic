@@ -12,7 +12,7 @@ const clock = new THREE.Clock();
 const settings = {
     particleColor: '#d000ff', // 默认青色
     particleSize: 0.01,
-    shapeScale: 2.0,
+    shapeScale: 2.8,
     particleShape: '爱心',
     // 全屏控制
     toggleFullscreen: () => {
@@ -34,25 +34,38 @@ const settings = {
  */
 function generateHeartShape(positions) {
     const scale = settings.shapeScale;
+    // 【新增/修改】更强的随机扰动因子，实现“发散”效果
+    const radialNoise = 0.8; // 增加心形轮廓周围的随机扩散范围
+    const depthNoise = 2.5;  // 增加 Z 轴厚度
+
     for (let i = 0; i < particleCount; i++) {
         const i3 = i * 3;
 
+        // 使用随机参数 t
         const t = Math.random() * 2 * Math.PI;
 
+        // 1. 基础心形曲线 (2D)
         let x = 16 * Math.pow(Math.sin(t), 3);
         let y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
 
-        // 【关键修改 1】：增加 Z 轴的随机范围和强度
-        // 当前可能只是 Math.cos(phi) * 1，这个 Z 轴范围不够大
-        // 我们可以用一个围绕中心点扩散的随机 Z 值
-        const z = (Math.random() - 0.5) * 2; // 调整这里的乘数 2，可以增加厚度
+        // 2. 在 X/Y 平面上添加径向噪音
+        // 随机乘数 (0.8 ~ 1.2)，使粒子沿轮廓线向外/向内扩散，消除清晰的边界
+        const spread = Math.random() * radialNoise + (1 - radialNoise / 2);
 
-        // 【关键修改 2】：在 x 和 y 方向上增加少量扰动，使粒子不那么规则地排列
-        const noiseFactor = 0.2; // 调整扰动强度
+        // 3. Z 轴厚度
+        // 使 Z 轴在一个较大范围内随机分布，产生厚度
+        const z = (Math.random() - 0.5) * depthNoise;
 
-        positions[i3] = (x / 20) * scale + (Math.random() - 0.5) * noiseFactor;
-        positions[i3 + 1] = (y / 20) * scale + (Math.random() - 0.5) * noiseFactor;
-        positions[i3 + 2] = z * scale * 0.2 + (Math.random() - 0.5) * noiseFactor; // Z 轴也加上扰动
+        // 4. 应用缩放和噪音
+        positions[i3] = (x / 20) * scale * spread;
+        positions[i3 + 1] = (y / 20) * scale * spread;
+        positions[i3 + 2] = z * scale * 0.1; // Z 轴缩放小一点，但深度范围大
+
+        // 额外的微小抖动，确保没有粒子重叠
+        const microNoise = (Math.random() - 0.5) * 0.1;
+        positions[i3] += microNoise;
+        positions[i3 + 1] += microNoise;
+        positions[i3 + 2] += microNoise;
     }
 }
 
@@ -199,17 +212,18 @@ function updateParticleColors(hexColor) {
 
         // 生成一个随机亮度乘数，使部分粒子更亮
         // Math.random() * 0.4 + 0.6 将生成 0.6 到 1.0 之间的值
-        const brightness = Math.random() * 0.4 + 0.6;
+        const brightness = Math.random() * 1.0 + 0.5; // 亮度范围: 0.5 到 1.5
 
-        // 颜色随机扰动和亮度叠加
-        const r = baseColor.r * brightness + Math.random() * 0.05;
-        const g = baseColor.g * brightness + Math.random() * 0.05;
-        const b = baseColor.b * brightness + Math.random() * 0.05;
+        // 在 X 轴上引入一些随机偏移，使颜色更自然
+        const r = baseColor.r * brightness + Math.random() * 0.1;
+        const g = baseColor.g * brightness + Math.random() * 0.1;
+        const b = baseColor.b * brightness + Math.random() * 0.1;
 
-        // 使用 THREE.AdditiveBlending 时，颜色值可以超过 1.0 以获得更强的发光效果
-        colors[i3] = r * 1.5; // 乘以 1.5 增加强度！
-        colors[i3 + 1] = g * 1.5;
-        colors[i3 + 2] = b * 1.5;
+        // 【关键】增加整体颜色强度（例如乘以 2.5），以达到极强的发光和白化效果。
+        const intensity = 2.5;
+        colors[i3] = r * intensity;
+        colors[i3 + 1] = g * intensity;
+        colors[i3 + 2] = b * intensity;
     }
 
     // **关键：只有当 particles 对象存在时，才设置 needsUpdate**
