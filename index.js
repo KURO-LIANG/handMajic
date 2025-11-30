@@ -2,7 +2,7 @@
 let scene, camera, renderer;
 let particles;
 let geometry;
-const particleCount = 20000; // 粒子数量，可根据性能调整
+const particleCount = 50000; // 粒子数量，可根据性能调整
 const initialPositions = new Float32Array(particleCount * 3); // 存储每个粒子的初始位置
 let handDistance = 0.5; // 0 (聚集) 到 1 (扩散)
 let currentShapeGenerator = generateHeartShape; // 默认形状生成函数
@@ -153,7 +153,16 @@ function initThree() {
     // 5. 初始化颜色 (颜色不需要等待 particles，只需要 colors 数组)
     updateParticleColors(settings.particleColor);
 
-    const material = new THREE.PointsMaterial({ /* ... */ });
+    const material = new THREE.PointsMaterial({
+        // size: settings.particleSize, // <-- 确保这里使用 settings.particleSize
+        size: 0.03, // 您 UI 默认值是 0.03，这个值一般是合理的。但如果看不到，可以暂时调小，例如 0.01
+
+        sizeAttenuation: true, // <-- 确保这一项是 true，让粒子大小随距离衰减
+        vertexColors: true,
+        blending: THREE.AdditiveBlending, // <-- 确保是 AdditiveBlending，让粒子发光叠加
+        transparent: true, // <-- 确保是 true
+        depthWrite: false // <-- 【新增】对于透明叠加粒子，通常设置为 false，避免深度写入问题
+    });
 
     // 6. 创建 particles 对象 (现在 particles 对象已存在)
     particles = new THREE.Points(geometry, material);
